@@ -38,43 +38,42 @@ void setup() {
 }
 
 void loop() {
-  /*
+  
   if (Serial.available() > 0) {
     float x_target = Serial.parseFloat();
     float y_target = Serial.parseFloat();
     moveTo(x_target, y_target);
   }
-    */
+    
   
 }
 
 // put function definitions here:
-/*
 void moveTo(float x_target, float y_target) {
   float dx = x_target - x_pos;
   float dy = y_target - y_pos;
 
-  long a_steps = (dx + dy) * steps_per_mm;
-  long b_steps = (dx - dy) * steps_per_mm;
+  long l_steps = (dx + dy) * steps_per_mm;
+  long r_steps = (dx - dy) * steps_per_mm;
 
-  long max_steps = max(abs(a_steps), abs(b_steps));
+  int max_steps = (l_steps > r_steps) ? l_steps : r_steps;
 
   for (long i = 0; i < max_steps; i++) {
-    if (i < abs(a_steps)) {
-      digitalWrite(L_DIR, a_steps > 0 ? HIGH : LOW);
+    if (i < abs(l_steps)) {
+      digitalWrite(L_DIR, l_steps > 0 ? HIGH : LOW);
       digitalWrite(L_STEP, HIGH);
-      delayMicroseconds(500);
+      delayMicroseconds(2000);
       digitalWrite(L_STEP, LOW);
     }
 
-    if (i < abs(b_steps)) {
-      digitalWrite(R_DIR, b_steps > 0 ? HIGH : LOW);
+    if (i < abs(r_steps)) {
+      digitalWrite(R_DIR, r_steps > 0 ? HIGH : LOW);
       digitalWrite(R_STEP, HIGH);
-      delayMicroseconds(500);
+      delayMicroseconds(200);
       digitalWrite(R_STEP, LOW);
     }
 
-    delayMicroseconds(500);  // Adjust for speed
+    delayMicroseconds(4000);  // Adjust for speed
   }
 
   x_pos = x_target;
@@ -84,4 +83,3 @@ void moveTo(float x_target, float y_target) {
   Serial.print(", ");
   Serial.println(y_pos);
 }
-*/
