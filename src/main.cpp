@@ -29,6 +29,7 @@ void setup() {
   // open serial 
   Serial.begin(9600);
   Serial.println("Running"); 
+  
   /*
   for (int i = 0; i < 200; i++){
     digitalWrite(L_STEP, HIGH);
@@ -39,6 +40,7 @@ void setup() {
 
   }
   */
+  
 }
 
 void loop() {
@@ -69,14 +71,14 @@ void moveTo(float x_target, float y_target) {
     if (i < abs(l_steps)) {
       digitalWrite(L_DIR, l_steps > 0 ? HIGH : LOW);
       digitalWrite(L_STEP, HIGH);
-      delayMicroseconds(4000);
+      delayMicroseconds(2000);
       digitalWrite(L_STEP, LOW);
     }
 
     if (i < abs(r_steps)) {
       digitalWrite(R_DIR, r_steps > 0 ? HIGH : LOW);
       digitalWrite(R_STEP, HIGH);
-      delayMicroseconds(200);
+      delayMicroseconds(2000);
       digitalWrite(R_STEP, LOW);
     }
 
@@ -93,9 +95,4 @@ void moveTo(float x_target, float y_target) {
   Serial.print(x_pos);
   Serial.print(", ");
   Serial.println(y_pos);
-}
-
-void home() {
-  // find x zero 
-
 }
