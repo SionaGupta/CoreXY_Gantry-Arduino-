@@ -75,6 +75,10 @@ void parseGCode(String command) {
     Serial.print(" Y");
     Serial.println(y_pos);
   }
+  else if (command.startsWith("M03")) { // Pick Place Drill 
+    // Lower and raise pen
+    // FILL IN 
+  }
   else {
     Serial.println("Unknown command");
   }
