@@ -1,23 +1,24 @@
 #include <Arduino.h>
 
-// function declarations
+// Function declarations
 void moveTo(float x_target, float y_target);
+void parseGCode(String command);
 
-// left and right stepper motors 
-const int L_STEP = 5; 
+// Left and right stepper motors
+const int L_STEP = 5;
 const int L_DIR = 4;
-const int R_STEP = 3; 
-const int R_DIR = 2; 
+const int R_STEP = 3;
+const int R_DIR = 2;
 
-//steps per mm
+// Steps per mm
 const float steps_per_mm = 80;
 
-// tracking position 
-float x_pos = 0; 
-float y_pos = 0; 
+// Tracking position (lower left corner, needs to be changed for homing)
+float x_pos = 0;
+float y_pos = 0;
 
 void setup() {
-  // define pins 
+  // Define pins
   pinMode(L_STEP, OUTPUT);
   pinMode(L_DIR, OUTPUT);
   pinMode(R_STEP, OUTPUT);
@@ -25,39 +26,61 @@ void setup() {
 
   digitalWrite(L_STEP, LOW);
   digitalWrite(R_STEP, LOW);
-  
-  // open serial 
-  Serial.begin(9600);
-  Serial.println("Running"); 
-  
-  /*
-  for (int i = 0; i < 200; i++){
-    digitalWrite(L_STEP, HIGH);
-    delayMicroseconds(2000);
-    digitalWrite(L_STEP, LOW);
-    delayMicroseconds(4000);
-    Serial.print(i);
 
-  }
-  */
-  
+  // Open serial
+  Serial.begin(9600);
+  Serial.println("Ready for G-code");
 }
 
 void loop() {
-  
+  // Read a full line from serial
   if (Serial.available() > 0) {
-    float x_target = Serial.parseFloat();
-    float y_target = Serial.parseFloat();
-    Serial.print("moving to: ");
-    Serial.print(x_target);
-    Serial.print(" and ");
-    Serial.println(y_target); 
-    moveTo(x_target, y_target);
-     
-  }       
+    String line = Serial.readStringUntil('\n');
+    line.trim(); // Remove any whitespace/newline
+    if (line.length() > 0) {
+      // expected example line: G00 X3 Y3 -> moves to (3, 3)
+      parseGCode(line);
+    }
+  }
 }
 
-// put function definitions here:
+// Parse a G-code line
+void parseGCode(String command) {
+  command.toUpperCase(); // consistency
+
+  if (command.startsWith("G00") || command.startsWith("G01")) { // Normal and Linear move (will make seperate later)
+    float x_target = x_pos;
+    float y_target = y_pos;
+
+    int xIndex = command.indexOf('X');
+    if (xIndex != -1) {
+      x_target = command.substring(xIndex + 1).toFloat();
+    }
+
+    int yIndex = command.indexOf('Y');
+    if (yIndex != -1) {
+      y_target = command.substring(yIndex + 1).toFloat();
+    }
+
+    Serial.print("Moving to: X");
+    Serial.print(x_target);
+    Serial.print(" Y");
+    Serial.println(y_target);
+
+    moveTo(x_target, y_target);
+  }
+  else if (command.startsWith("M114")) { // Report current position
+    Serial.print("Current position: X");
+    Serial.print(x_pos);
+    Serial.print(" Y");
+    Serial.println(y_pos);
+  }
+  else {
+    Serial.println("Unknown command");
+  }
+}
+
+// Move function 
 void moveTo(float x_target, float y_target) {
   float dx = x_target - x_pos;
   float dy = y_target - y_pos;
@@ -83,16 +106,13 @@ void moveTo(float x_target, float y_target) {
     }
 
     delayMicroseconds(4000);  // Adjust for speed
-
-    digitalWrite(L_STEP, LOW);
-    digitalWrite(R_STEP, LOW);
-  
   }
 
   x_pos = x_target;
   y_pos = y_target;
-  Serial.print("Moved to: ");
+
+  Serial.print("Moved to: X");
   Serial.print(x_pos);
-  Serial.print(", ");
+  Serial.print(" Y");
   Serial.println(y_pos);
 }
