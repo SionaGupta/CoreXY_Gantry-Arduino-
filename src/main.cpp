@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Servo.h>
 
 // Function declarations
 void moveTo(float x_target, float y_target);
@@ -9,6 +10,7 @@ const int L_STEP = 5;
 const int L_DIR = 4;
 const int R_STEP = 3;
 const int R_DIR = 2;
+const int SERVO_P = 6;
 
 // Steps per mm
 const float steps_per_mm = 80;
@@ -27,9 +29,15 @@ void setup() {
   digitalWrite(L_STEP, LOW);
   digitalWrite(R_STEP, LOW);
 
+  // Create servo object
+  Servo myServo;              
+  myServo.attach(SERVO_P);
+
   // Open serial
   Serial.begin(9600);
   Serial.println("Ready for G-code");
+
+  
 }
 
 void loop() {
