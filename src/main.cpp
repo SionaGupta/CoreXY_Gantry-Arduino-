@@ -13,11 +13,15 @@ const int R_DIR = 2;
 const int SERVO_P = 6;
 
 // Steps per mm
-const float steps_per_mm = 80;
+const float steps_per_mm = 120;
+const float INCH_TO_MM = 25.4;
 
 // Tracking position (lower left corner, needs to be changed for homing)
 float x_pos = 0;
 float y_pos = 0;
+
+Servo myServo;              
+
 
 void setup() {
   // Define pins
@@ -29,18 +33,18 @@ void setup() {
   digitalWrite(L_STEP, LOW);
   digitalWrite(R_STEP, LOW);
 
-  // Create servo object
-  Servo myServo;              
   myServo.attach(SERVO_P);
 
   // Open serial
+  
   Serial.begin(9600);
   Serial.println("Ready for G-code");
-
+  
   
 }
 
 void loop() {
+
   // Read a full line from serial
   if (Serial.available() > 0) {
     String line = Serial.readStringUntil('\n');
@@ -51,6 +55,11 @@ void loop() {
     }
   }
 }
+
+// G00 X9 Y-3
+
+
+
 
 // Parse a G-code line
 void parseGCode(String command) {
@@ -83,12 +92,33 @@ void parseGCode(String command) {
     Serial.print(" Y");
     Serial.println(y_pos);
   }
-  else if (command.startsWith("M03")) { // Pick Place Drill 
-    // Lower and raise pen
-    // FILL IN 
+  else if (command.startsWith("M03")) { // Pick Place Drill     
+    myServo.write(100);
+    delay(1000);
+
+    // Move back to 0°
+    myServo.write(30);
+    delay(2000);
   }
   else {
-    Serial.println("Unknown command");
+      int spaceIndex = command.indexOf(' ');
+    if (spaceIndex != -1) {
+      String first = command.substring(0, spaceIndex);
+      String second = command.substring(spaceIndex + 1);
+
+      if (first.length() > 0 && second.length() > 0) {
+        float x_target = first.toFloat();
+        float y_target = second.toFloat();
+
+        Serial.print("Moving to: X");
+        Serial.print(x_target);
+        Serial.print(" Y");
+        Serial.println(y_target);
+
+        moveTo(x_target, y_target);
+        return;  
+      }
+    }
   }
 }
 
@@ -96,9 +126,10 @@ void parseGCode(String command) {
 void moveTo(float x_target, float y_target) {
   float dx = x_target - x_pos;
   float dy = y_target - y_pos;
+ 
 
-  long l_steps = (dx + dy) * steps_per_mm;
-  long r_steps = (dx - dy) * steps_per_mm;
+  long l_steps = ((dx + dy) ) * steps_per_mm;
+  long r_steps = ((dx - dy) ) * steps_per_mm;
 
   int max_steps = (abs(l_steps) > abs(r_steps)) ? abs(l_steps) : abs(r_steps);
 
